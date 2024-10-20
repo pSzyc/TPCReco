@@ -38,7 +38,13 @@ jobs:
     
     - name: Build and Test
       run: |
-          singularity run elitpc_tpcreco-sim-dev.sif
-          mkdir build; cd build
-          cmake -DBUILD_TEST=ON ../
-          make install -j 4
+          # Run Singularity container
+          singularity exec elitpc_tpcreco-sim-dev.sif bash -c '
+            echo "Running inside Singularity container: $(hostname)"
+            cat /proc/1/cgroup
+
+            # Create a build directory and run the build
+            mkdir build && cd build
+            cmake -DBUILD_TEST=ON ../
+            make install -j 4
+          '
