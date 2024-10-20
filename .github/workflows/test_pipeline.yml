@@ -32,6 +32,5 @@ jobs:
             mkdir build && cd build
             cmake -DBUILD_TEST=ON ../
             make install -j 4
-            export LC_ALL=$LANG
             ctest
           '
