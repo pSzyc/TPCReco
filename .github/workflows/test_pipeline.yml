@@ -31,12 +31,9 @@ jobs:
     
     - name: Build and Test
       run: |
+          apptainer version
+          singularity version
           singularity run elitpc_tpcreco-sim-dev.sif
-          ls -la
-          sleep 10
           mkdir build
           cd build
           cmake -DBUILD_TEST=ON ../
-          make install -j 4
-          export LC_ALL=$LANG
-          ctest
