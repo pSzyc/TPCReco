@@ -3,7 +3,7 @@ name: Hello World
 on:
   push:
     branches:
-      - main
+      - test/pipeline
   pull_request:
     branches:
       - ZPS_2024_winter
