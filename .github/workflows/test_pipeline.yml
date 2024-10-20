@@ -29,5 +29,11 @@ jobs:
     - name: Download file from Google Drive
       run: gdown ${{ secrets.CONTAINER_URL }}
     
-    - name: List files
-      run: ls -l
+    - name: Build and Test
+      run: |
+          mkdir build
+          cd build
+          cmake -DBUILD_TEST=ON ../
+          make install -j 4
+          export LC_ALL=$LANG
+          ctest
