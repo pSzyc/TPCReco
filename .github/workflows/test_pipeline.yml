@@ -19,13 +19,39 @@ jobs:
     
     - name: Install gdown
       run: pip install gdown
-    
+        
+    - name: Ensure repositories are up-to-date
+      run: sudo apt-get update
+
+    - name: Install dependencies
+      run: sudo apt-get install -y \
+        build-essential \
+        libseccomp-dev \
+        pkg-config \
+        uidmap \
+        squashfs-tools \
+        fakeroot \
+        cryptsetup \
+        tzdata \
+        dh-apparmor
+
+    - name: Install Go
+      run: sudo apt-get install -y golang-go
+
+    - name: Clone Apptainer repository
+      run: git clone https://github.com/apptainer/apptainer.git
+
+    - name: Build Apptainer
+      run: |
+        cd apptainer
+        ./mconfig
+        cd $(/bin/pwd)/builddir
+        make
+        sudo make install
+        cd ../..
+  
     - uses: actions/checkout@v2
-    
-    - uses: eWaterCycle/setup-apptainer@v2
-      with:
-        apptainer-version: 1.3.4
-    
+
     - name: Download file from Google Drive
       run: gdown ${{ secrets.CONTAINER_URL }}
     
