@@ -32,6 +32,8 @@ jobs:
     - name: Build and Test
       run: |
           singularity run elitpc_tpcreco-sim-dev.sif
+          ls -la
+          sleep 10
           mkdir build
           cd build
           cmake -DBUILD_TEST=ON ../
