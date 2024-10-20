@@ -1,4 +1,4 @@
-name: Run Tests
+name: Hello World
 
 on:
   push:
@@ -6,25 +6,15 @@ on:
       - main
   pull_request:
     branches:
-      - main
+      - ZPS_2024_winter
 
 jobs:
-  run-singularity:
+  hello_world_job:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Install Singularity
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y singularity-container
-
-    - name: Download Singularity Image
-      run: |
-        wget -O app_container.sif ${{ secrets.SINGULARITY_IMAGE_URL }}
-
-    - name: Run Singularity Image
-      run: |
-        singularity run app_container.sif
+    - name: Print Hello World
+      run: echo "Hello World"
