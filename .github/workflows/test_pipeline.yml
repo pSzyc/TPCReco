@@ -1,6 +1,8 @@
 name: Run Tests
 
 on:
+  push:
+    branches: [feat/skan_pipeline]
   pull_request:
     branches:
       - ZPS_2024_winter
@@ -10,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - uses: eWaterCycle/setup-apptainer@v2
       with:
@@ -34,3 +36,13 @@ jobs:
             make install -j 4
             ctest
           '
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
