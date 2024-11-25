@@ -23,6 +23,12 @@ git clone ssh://git@dracula.hep.fuw.edu.pl:8822/akalinowski/TPCReco.git
 cd TPCReco
 docker build --no-cache --rm --target user -t elitpc/tpcreco:latest -f docker/Dockerfile . 
 ```
+
+### Build without elitpc/get as base
+It is possible to run the aplication without `elitpc/get` base image.
+This way however it won't be possible to use GRAW files.
+To do so please build the `./docker/BaseNoGet.dockerfile` and use it as a base instead of `elitpc/get`. 
+
 ## Getting started with Singularity
 
 It's possible to convert `TPCReco` docker image to singularity image.
