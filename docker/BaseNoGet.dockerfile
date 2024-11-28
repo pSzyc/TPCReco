@@ -20,3 +20,4 @@ RUN apt-get update -qq \
 ENV ROOTSYS=/opt/root
 ENV PATH=$ROOTSYS/bin:$PATH
 ENV CLING_STANDARD_PCH=none
+ENV LD_LIBRARY_PATH=$ROOTSYS/lib
