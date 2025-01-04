@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(MyTFProject)
+set(CMAKE_CXX_STANDARD 14)
 
 set(TENSORFLOW_INCLUDE_DIR /usr/local/include)
 set(TENSORFLOW_LIB_DIR /usr/local/lib)

@@ -41,5 +41,5 @@ COPY ./Tensorflow /app
 RUN cd /app && \
     mkdir build && \
     cd build && \
-    cmake -DCMAKE_CXX_STANDARD=11 .. && \
+    cmake .. && \
     make
