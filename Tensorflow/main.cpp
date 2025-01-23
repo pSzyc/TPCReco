@@ -3,11 +3,13 @@
 #include "tf_functions.h"
 
 int main () {
+
 	std::vector<float> x_test_0 = {1, 2, 3, 4, 5};
 	std::vector<float> y_test_0 = {1};
-
-
+    
 	char model_path[] = "../model";
+
+    //moze do konstruktora
 	TF_Graph * graph = nullptr;
 	TF_Session * session = nullptr;
 	TF_Tensor * input_tensor = nullptr, * output_tensor = nullptr;
@@ -21,6 +23,7 @@ int main () {
 		return 2;
 	}
 
+    //info na ekran (useless)
 	std::cout << "init input_op" << std::endl;
 
 	TF_Operation * output_op = TF_GraphOperationByName(graph, "StatefulPartitionedCall");
@@ -32,7 +35,7 @@ int main () {
 
 	std::cout << "init output_op" << std::endl;
 
-
+    //przeładowany operator klasy / metoda?
 	std::vector<std::int64_t> dims = {1, 5};
 	int num_dims = 2;
 	tf_functions::create_tensor(TF_FLOAT, dims, num_dims, x_test_0, &input_tensor);
@@ -42,7 +45,7 @@ int main () {
 		&output, &output_tensor, 1);
 
 
-	// Check results
+	//niech zwraca <vector>
 	auto tensor_data = static_cast<float*>(TF_TensorData(output_tensor));
 
 	std::cout << std::endl << "Prediction:" << std::endl;
@@ -50,6 +53,8 @@ int main () {
 	for (int i = 0; i < 1; i++) {
         std::cout << tensor_data[i] << std::endl;
     }
+
+    //destruktor
 	tf_functions::delete_tensor(input_tensor);
 	tf_functions::delete_tensor(output_tensor);
 	tf_functions::delete_graph(graph);

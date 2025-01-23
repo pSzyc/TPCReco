@@ -56,4 +56,7 @@ Makefile
 /CMakeSettings.json
 
 # Models
-Tensorflow/model
+Tensorflow/saved_model
+
+#venv
+venv

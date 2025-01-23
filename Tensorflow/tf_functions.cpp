@@ -6,7 +6,7 @@
 
 
 namespace tf_functions {
-
+    
 	int load_session (const char * model_path, TF_Graph ** graph, TF_Session ** session) {
 		TF_Status * status = TF_NewStatus();
 		TF_SessionOptions * session_opts = TF_NewSessionOptions();

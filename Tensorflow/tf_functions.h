@@ -27,8 +27,5 @@ namespace tf_functions {
 		return create_tensor(data_type, dims.data(), num_dims, data.data(), tensor);
 	}
 
-
-	void delete_tensor(TF_Tensor * tensor);
-
-	
+	void delete_tensor(TF_Tensor * tensor);s
 }
