@@ -57,3 +57,5 @@ Makefile
 
 # Models
 Tensorflow/model
+
+.venv
