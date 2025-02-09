@@ -1,8 +1,27 @@
-ARG GET_VERSION=20190315_patched
-ARG ROOT_VERSION=6.08
-ARG UBUNTU_VERSION=xenial
+FROM ubuntu:16.04 AS base_root
 
-FROM elitpc/get:${GET_VERSION}-${UBUNTU_VERSION}-${ROOT_VERSION} AS common_base
+ARG ROOT_BIN=root_v6.08.00.Linux-ubuntu16-x86_64-gcc5.4.tar.gz
+
+WORKDIR /opt
+
+COPY packages_root packages
+
+RUN apt-get update -qq \
+ && ln -sf /usr/share/zoneinfo/UTC /etc/localtime \
+ && apt-get -y install $(cat packages) wget \
+ && rm -rf /var/lib/apt/lists/* \
+ && wget https://root.cern/download/${ROOT_BIN} \
+ && tar -xzvf ${ROOT_BIN} \
+ && rm -f ${ROOT_BIN} \
+ && rm -f packages \
+ && echo /opt/root/lib >> /etc/ld.so.conf \
+ && ldconfig
+
+ENV ROOTSYS=/opt/root
+ENV PATH=$ROOTSYS/bin:$PATH
+ENV CLING_STANDARD_PCH=none
+ENV LD_LIBRARY_PATH=$ROOTSYS/lib
+
 
 RUN apt-get update -qq \
     && apt-get -y install git \
@@ -46,23 +65,11 @@ RUN apt-get update -qq \
 RUN yes | pip3 install --no-cache-dir -r /tmp/requirements_pip3.txt
 RUN rm /tmp/requirements_*.txt
 
-
-FROM common_base AS dev
-RUN apt-get update -qq \
-    && apt-get -y install \
-    gdb valgrind git ccache \
-    binutils linux-tools-generic \
-    && rm -rf /var/lib/apt/lists/*
-RUN useradd -ms /bin/bash woodpecker
-
-FROM common_base AS user
-ADD . /opt/soft/TPCReco-src
-WORKDIR /opt/soft/
-RUN cmake -S TPCReco-src -Bbuild \
-    -DCMAKE_INSTALL_PREFIX=/opt/soft/TPCReco \
-    && cmake --build build --target install \
-    && rm -r build
-ENV PATH=${PATH}:/opt/soft/TPCReco/bin
-ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/opt/soft/TPCReco/lib
-ENV CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/soft/TPCReco/lib/cmake
-WORKDIR /opt/soft/TPCReco/resources
+RUN version=2.18.0 && \
+    cpu_or_gpu="cpu" && \
+    echo "Download Tensorflow-$cpu_or_gpu-$version" && \
+    tensorflow_link="https://storage.googleapis.com/tensorflow/versions/$version/libtensorflow-$cpu_or_gpu-linux-x86_64.tar.gz" && \
+    wget -O /tmp/tensorflow.tar.gz $tensorflow_link && \
+    echo "Extracting..." && \
+    tar -C /usr/local -xzf /tmp/tensorflow.tar.gz && \
+    ldconfig
