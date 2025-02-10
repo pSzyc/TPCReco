@@ -1,0 +1,110 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=blue,
+	citecolor=blue,
+	filecolor=magenta,
+	urlcolor=black        
+}
+\usepackage[a4paper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[polish]{babel}
+\usepackage{csquotes}
+\usepackage[sorting=none, language=polish]{biblatex}
+
+
+\addbibresource{bibliography.bib}
+
+\title{Rozwój aplikacji do analizy danych uzyskanych w eksperymencie Warsaw TPC. -- raport}
+\author{ Przemysław Szyc \\ Jan Kierzkowski \\ Filip Baran \\ Mateusz Perc \\ Krzysztof Macuk \\\\ Opiekun: dr hab. Artur Kalinowski}
+
+\begin{document}
+
+\maketitle
+
+\section{Wstęp}
+Analiza danych w eksperymencie WarsawTPC \cite{WAWTPC}, zajmującym się badaniem zjawiska fotodezintegracji atomów tlenu i węgla odbywa się przy pomocy programów z repozytorium TPCReco \cite{TPCReco}, napisanych w języku C++. Istotnym elementem tego oprogramowania są symulacje zdarzeń metodą Monte Carlo, planowane jest też rozbudowanie aplikacji o moduł uczenia maszynowego.
+Rozwój aplikacji TPCReco pozwoli na sprawniejszą analizę danych oraz dokładniejsze zbadanie wspomnianego zjawiska.
+
+\section{Cel projektu zespołowego}
+
+Projekt zespołowy zakładał rozszerzenie funkcjonalności oprogramowania TPCReco. Jednym z zakładanych celów była integracja modułu MonteCarlo z interfejsem graficznym aplikacji poprzez stworzenie nowej klasy generującej przypadki.
+
+Ponadto, planowano opracowanie metody uruchamiania modeli Tensorflow\cite{TensorFlow} w środowisku aplikacji, a następnie rozwój modułu rekonstrukcji przypadków przy pomocy sieci neuronowych.
+
+Dodatkowym celem projektu było stworzenie dedykowanego pliku Dockerfile, który zapewni niezależność od prywatnego obrazu \textbf{elitpc/get} i umożliwi łatwiejszą dystrybucję oraz wdrażanie oprogramowania. 
+Aby zapewnić wysoką jakość kodu, zaplanowano wdrożenie mechanizmów automatycznego testowania kodu z wykorzystaniem GitHub Actions\cite{Actions} obejmujących uruchamianie testów jednostkowych oraz analizę poprawności kodu.
+
+Dodatkowym zadaniem było utworzenie bazy danych do przechowywania i analizy parametrów pomiarowych związanych z przebiegami eksperymentu.
+
+Ostatnim zadaniem zespołu było rozwijanie oraz dodawanie testów jednostkowych do aplikacji.
+\section{Repozytoria i obszary robocze projektu}
+
+Kod aplikacji jest dostępny w repozytorium w serwisie Github \cite{TPCReco}. Praca zespołu odbywała się w repozytrium będącym forkiem projektu \cite{TPCRecofork}.
+
+Ponadto zespół korzystał z przestrzeni w Notion \cite{Notion} na potrzeby związane z tworzeniem i podziałem zadań, przekazywaniem raportów cząstkowych opiekunowi projektu, oraz spisywaniem instrukcji do niektórych czynności. 
+
+\section{Zmiany klasy EventSourceMC}
+W ramach projektu wykonane zostało połączenie pomiędzy modułem MonteCarlo oraz klasą MainFrame z modułu GUI. Było ono możliwe dzięki wprowadzeniu zmian w klasie EventSourceMC. Logika tworzenia nowych przypadków przed zmianami była bezpośrednio zaimplementowana w metodach tej klasy. Nowe rozwiązanie polega na oddelegowaniu procesu tworzenia nowych przypadków klasie RunController, który służy do uruchamiania sekwencyjnie sub-modułów MonteCarlo. Wprowadzone zmiany są zgodne z zasadami programowania obiektowego, w szczególności z zasadą pojedynczej odpowiedzialności \cite{solid} oraz umożliwiają lepszą organizację kodu. Konsekwencji wykonanego połączenia jest też nowa funkcjonalność w postaci tego, że tworzone i oglądane przypadki mogą być zapisywane do pliku jeśli w sekwencji modułów pojawi się sub-moduł EventFileExporter.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width = 0.5\textwidth]{img/event_source_uml.png}
+    \caption{Diagram UML zaimplementowanego rozwiązania. Wykonane zostało połączenie między EventSourceMC oraz RunController-em. Celem tego połączenia było wykorzystanie logiki symulacji przypadków zaimplementowanej w module MonteCarlo.}
+    \label{uml}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width = \textwidth]{img/gui.png}
+    \caption{Widok GUI w przypadku wykorzystanie źródła przypadków EventSourceMC. Nowa konfiguracja wyświetla informacje o trybie działania: "OFFLINE from Geant4".}
+    \label{gui}
+\end{figure}
+
+
+\section{Uruchamianie modeli Tensorflow}
+\subsection{Rezultaty}
+W ramach projektu planowano stworzyć moduł rekonstrukcji zdarzeń przy pomocy uczenia maszynowego. Podjęto kilka prób znalezienia najlepszego sposobu uruchamiania modeli Tensorflow w języku w którym napisana jest aplikacja - C++. Sprawdzono bibliotekę \cite{cppflow} która będąc popularnym rozwiązaniem nie była jednak możliwa do uruchomienia w kontenerze developerskim. Ostatecznie, zdecydowano się posłużyć API C do Tensorflow. Jest ono prostsze w obsłudze zarówno na poziomie kodu aplikacji jak i samego Dockerfile. API C++ również mogłoby zostać użyte, jednak poszukiwania zostały przerwane gdy zespół znalazł działający przykład oraz dostosował go do najnowszej wersji Tensorflow. 
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width = 0.3\textwidth]{img/model.png}
+    \caption{Schemat modelu uruchomionego poprzez API C do Tensorflow.}
+    \label{model}
+\end{figure}
+
+\subsection{Sugerowane kroki}
+Sugerowanym kolejnym krokiem jest integracja stworzonego rozwiązania z resztą aplikacji poprzez stworzenie klasy MLTrackBuilder.
+\section{Dockerfile aplikacji}
+\subsection{Rezultaty}
+Stworzony został plik Dockerfile dla aplikacji w oparciu o Ubuntu 16.04 z wersją programu Root 6.08. Plik ten posłużyć może do tworzenia nowego obrazu podstawowego który zamienić może prywatny obraz elitpc/get używany do tej pory. Wykorzystując nowy obraz bazowy zbudowano aplikację oraz uruchomiono z powodzeniem testu. Nowe rozwiązanie nie pozwala jednak na uruchamianie aplikacji z plikami GRAW.
+\subsection{Sugerowane kroki}
+Należałoby stworzyć kontener w oparciu o najnowszy obraz Ubuntu oraz nowsze wersje programów Geant4 oraz Root. Posiadanie publicznego Dockerfile umożliwi ponadto budowanie aplikacji w Github Actions.
+
+\section{Github actions}
+\subsection{Rezultaty}
+Zaimplementowano dwie funkcjonalności przy użyciu Github Actions \cite{Actions}: automatyczne uruchamianie testów jednostkowych oraz skan bezpieczeństwa przy pomocy GitLeaks\cite{gitleaks} i Snyk \cite{snyk}. Uruchamianie testów jednostkowych w obliczu braku Dockerfile lub innej metody umożliwiającej zbudowanie aplikacji zostało zaimplementowane przez pobieranie kontenera z Google Drive. W obecnej konfiguracji przy wykorzystaniu singularity w Github Actions z powodzeniem uruchamiane są testy jednostkowe.
+Zastosowany skan GitLeaks nie wykrył niebezpieczeństw. Narzędzie Snyk skanując kod poleciło zwrócenie uwagi na kwestie sprawdzania zawartości wczytywanych przez aplikację plików, zwalniania alokowanej pamięci oraz poprawienie pliku Dockerfile.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width = \textwidth]{img/snyk.png}
+    \caption{Zrzut ekranu z wyniku skanu repozytorium narzędziem Snyk\cite{snyk}.}
+    \label{snyk}
+\end{figure}
+\subsection{Sugerowane kroki}
+Należałoby zintegrować projekt z narzędziem automatycznego formatowania kodu. Warto zamienić obecny sposób uruchamiania testów w Github Actions na inny, nie korzystający z Google Drive. Można do tego wykorzystać nowy podstawowy obraz aplikacji.
+\section{Baza danych JSON}
+Baza danych została stworzona, aby przechowywać informacje na temat poszczególnych przebiegów tj. informacje o wiązce, czas i ustawienia detektorów. Plik JSON powstał na podstawie pliku excel o rozszerzeniu .xlsx. Baza JSON została podzielona na 6 głównych węzłów - "metaData"(dane o przebiegu np. czas), "beam", "getNIMSettings",  "conditions"(warunki pomiaru),  "averageDaqRates"(pozyskiwanie danych np. częstość próbkowania). Konwersja plików xlsx została zautomatyzowana przez skrypt w języku python, który dba o poprawność danych(sprawdzenie typu) i pliku JSON. Skrypt posiada dwa pliki konfiguracyjne. Pierwszy z nich template.json określa typ danych("num","str") w danym polu, drugi - dict\_json\_x.json przechowuje nazwy kolumny z pliku .xlsx z której dane mają się znajdować w danym polu w pliku JSON. Cały skrypt wraz z opisem znajduje się w repozytorium github\cite{JSON_DB}.
+\section{Podsumowanie}
+
+Projekt zespołowy realizowany został w semestrze zimowym roku akademickiego 2024/25 na Wydziale Fizyki Uniwersytetu Warszawskiego. Zrealizowano większość celów uzgodnionych z opiekunem projektu: udało się rozwinąć aplikacje do analizy danych z eksperymentu WarsawTPC zarówno poprzez połączenie istniejących już komponentów aplikacji jak i stworzenie nowych takich jak baza danych oraz metoda uruchamiania modeli Tensorflow w środowisku aplikacji. Nie wykonane zostało jednak zadanie rozwijania testów jednostkowych, ponadto opracowana metoda integracji z Tensorflow powinna zostać opakowana w nowy moduł.
+
+\setcounter{biburllcpenalty}{7}
+\setcounter{biburlucpenalty}{8}
+
+\printbibliography[title=Bibliografia]
+
+\end{document}

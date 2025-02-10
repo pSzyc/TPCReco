@@ -52,6 +52,9 @@ MainFrame::MainFrame(const TGWindow* p, UInt_t w, UInt_t h, const boost::propert
 	else if (myWorkMode == M_OFFLINE_GRAW_MODE || myWorkMode == M_OFFLINE_NGRAW_MODE) {
 		modeLabel = "OFFLINE from GRAW";
 	}
+	else if (myWorkMode == M_OFFLINE_GEANT4_MODE) {
+		modeLabel = "OFFLINE from Geant4";
+	}
 	fFileInfoFrame->updateModeLabel(modeLabel);
 	Update();
 }
@@ -79,6 +82,12 @@ void MainFrame::InitializeWindows() {
 
 	//Left column
 	AddHistoCanvas();
+
+    // Additional Canvas with 3D scene
+	if(myConfig.get<bool>("display.develMode")) {
+		fWirePlotCanvas.reset(new TCanvas("fWirePlotCanvas", "3D detector", 400, 400));
+		myHistoManager.createWirePlotDriftCage3D(fWirePlotCanvas);
+	}
 	///Middle column
 	int attach = 0;
 	attach = AddButtons(attach);
@@ -124,6 +133,10 @@ void MainFrame::InitializeEventSource() {
 	}
 	else if (eventSourceType == event_type::EventSourceMultiGRAW) {
 		myWorkMode = (onlineFlag ? M_ONLINE_NGRAW_MODE : M_OFFLINE_NGRAW_MODE);
+	}
+	else {
+		std::cerr << "Unknown event source type: " << eventSourceType << std::endl;
+		exit(1);
 	}
 	
 	myHistoManager.setConfig(myConfig);
@@ -515,6 +528,7 @@ void MainFrame::ClearCanvases() {
 	myHistoManager.clearCanvas(fMainCanvas, isLogScaleOn);
 	myHistoManager.clearCanvas(fRawHistosCanvas, isLogScaleOn);
 	myHistoManager.clearCanvas(fTechHistosCanvas, isLogScaleOn);
+	myHistoManager.clearObjects();
 
 }
 /////////////////////////////////////////////////////////
@@ -535,9 +549,14 @@ void MainFrame::Update() {
 	ClearCanvases();
 	
 	if (isRecoModeOn) myHistoManager.drawRecoHistos(fMainCanvas);
-	else if(myConfig.get<bool>("display.develMode")) myHistoManager.drawDevelHistos(fMainCanvas);
+	else if(myConfig.get<bool>("display.develMode")) {
+		myHistoManager.drawDevelHistos(fMainCanvas);
+		myHistoManager.drawTrack3D(fWirePlotCanvas.get());
+
+	}
 	else if(myConfig.get<bool>("display.technicalMode")) myHistoManager.drawTechnicalHistos(fMainCanvas, myEventSource->getGeometry()->GetAgetNchips());
 	else myHistoManager.drawRawHistos(fMainCanvas, isRateDisplayOn);
+
 }
 /////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////
