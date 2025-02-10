@@ -77,7 +77,9 @@ private:
   /// Calculate track segment tangent in 3D
   /// There are requirements for minimal length of 2D projection to 
   /// provide reliable estimate of the bias
-  TVector3 getTangent(int iTrack2DSeed=-1);
+  /// if guiMode is true, then the tangent is calculated from signed lengths
+  /// as length from clicking have reliable orientation
+  TVector3 getTangent(int iTrack2DSeed=-1, bool guiMode=false);
 
   /// Calculate track segment bias in 2D. Bias is defined as 
   /// position of the maximum charge in time-strip projection.
@@ -93,18 +95,16 @@ private:
   /// Calculate length in XY plane from two projections using formula for length 
   /// in covariant coordinates: l = sqrt(g_ij * dx^i * dx^j)
   double getXYLength(definitions::projection_type dir1, 
-                     definitions::projection_type dir2,
-                     double l1, double l2) const;
+                     definitions::projection_type dir2) const;
 
   /// Calculate the 3D track azimuthal angle using ratios
   /// of the unsigned lengths of projections on strip directions
-  double getTangentPhiFromUnsignedLengths(double l_U, double l_V, double l_W) const;
+  double getTangentPhiFromUnsignedLengths() const;
 
   /// Solve equation for cos(phi) and sin(phi) for given two projection tangents
   /// use signed lengths.
   double getTangentPhiFromSignedLengths(definitions::projection_type dir1, 
-                                        definitions::projection_type dir2,
-                                        double l1, double l2) const;
+                                        definitions::projection_type dir2) const;
   
 
   /// Calculate length of track projection on strip direction.
@@ -125,7 +125,7 @@ private:
                                         definitions::projection_type auxProj) const;                             
 
 
-  TrackSegment3D buildSegment3D(int iTrackSeed=-1);
+  TrackSegment3D buildSegment3D(int iTrackSeed=-1, bool guiMode=false);
 
   /// Fit a dot - a very short cluster, 
   /// failing minimal length requirements for bias and tangent estimation
@@ -178,8 +178,9 @@ private:
   double minStripProjLengthForVertTracks{20}; //parameter to be moved to configuration
   double minTimeProjLength{20};  //parameter to be moved to configuration 
   double epsilon{1E-2};          //parameter to be moved to configuration
-  double stripDiffusionMargin{2.0}; //parameter to be moved to configuration
-  double timeDiffusionMargin{4.0}; //parameter to be moved to configuration
+  double stripDiffusionMargin{-1.0}; //parameter to be moved to configuration
+  double timeDiffusionMargin{-1.0}; //parameter to be moved to configuration
+  double minTkLenghtWithHypothesis{30}; //parameter to be moved to configuration
 
 };
 #endif
