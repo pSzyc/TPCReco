@@ -27,7 +27,7 @@ docker build --no-cache --rm --target user -t elitpc/tpcreco:latest -f docker/Do
 ### Build without elitpc/get as base
 It is possible to run the aplication without `elitpc/get` base image.
 This way however it won't be possible to use GRAW files.
-To do so please build the `./docker/BaseNoGet.dockerfile` and use it as a base instead of `elitpc/get`. 
+To do so please build the `./docker/TFNoGet.dockerfile`. 
 
 ## Getting started with Singularity
 
