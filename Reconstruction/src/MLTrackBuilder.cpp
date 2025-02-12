@@ -28,12 +28,19 @@ TensorflowModel::TensorflowModel(const char* model_path, const boost::property_t
     }
 }
 
-Tensor TensorflowModel::run(const Tensor input_data, std::vector<int64_t> output_shape)
+std::vector<float> TensorflowModel::run(std::vector<float> input_data, size_t batch_size)
 {    
+    
+    std::vector<size_t> input_dim = myConfig.get<std::vector<size_t>>("MLTrackBuilder.InputDim")
+    std::vector<size_t> output_dim = myConfig.get<std::vector<size_t>>("MLTrackBuilder.OutputDim")
 
-    // Create the input tensor using the stored dimensions.
+
+    input_dim.insert(input_dim.first(), batch_size)
+    output_dim.insert(output_dim.first(), batch_size)
+
+    
     TF_Tensor* input_tensor = nullptr;
-    tf_functions::create_tensor(TF_FLOAT, input_data.shape, input_data.shape.size(), input_data.data, &input_tensor);
+    tf_functions::create_tensor(TF_FLOAT, input_dim, input_dim.size(), input_data, &input_tensor);
 
 
     // Run the session.
@@ -47,7 +54,7 @@ Tensor TensorflowModel::run(const Tensor input_data, std::vector<int64_t> output
 
     std::vector<float> results;
     int64_t output_lenght = 1;
-    for (auto el: output_shape){
+    for (auto el: output_dim){
         output_lenght *= el;
     }
     results.reserve(output_lenght);
@@ -60,8 +67,7 @@ Tensor TensorflowModel::run(const Tensor input_data, std::vector<int64_t> output
     tf_functions::delete_tensor(input_tensor);
     tf_functions::delete_tensor(output_tensor);
 
-    Tensor tensor = {output_shape, results};
-    return tensor;
+    return results;
 }
 
 TensorflowModel::~TensorflowModel()

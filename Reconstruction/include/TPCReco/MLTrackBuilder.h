@@ -5,19 +5,13 @@
 #include <cstdint>
 #include <tensorflow/c/c_api.h>
 
-// Structure to hold the output tensor data together with its shape.
-struct Tensor {
-    std::vector<std::int64_t> shape;
-    std::vector<float> data;
-};
-
 class TensorflowModel {
 public:
 
     TensorflowModel(const char* model_path, const boost::property_tree::ptree& aConfig);
 
-    Tensor run(const Tensor input_data, std::vector<int64_t> output_shape);
-
+    std::vector<float> data run(std::vector<float> data);
+    
     ~TensorflowModel();
 
 private:
