@@ -14,7 +14,7 @@ struct Tensor {
 class TensorflowModel {
 public:
 
-TensorflowModel(const char* model_path);
+    TensorflowModel(const char* model_path, const boost::property_tree::ptree& aConfig);
 
     Tensor run(const Tensor input_data, std::vector<int64_t> output_shape);
 
@@ -25,6 +25,7 @@ private:
     TF_Session* session;
     TF_Output input;
     TF_Output output;
+	boost::property_tree::ptree myConfig;
 };
 
 #endif // TENSORFLOWMODEL_H

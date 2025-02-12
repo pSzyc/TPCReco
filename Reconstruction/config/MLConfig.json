@@ -1,0 +1,7 @@
+{
+    "MLTrackBuilder": {
+        "ModelPath": "..",
+        "InputImageDim": [512, 256, 3],
+        "OutputDim": [9]
+    }
+}

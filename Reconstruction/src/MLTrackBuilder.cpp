@@ -1,8 +1,9 @@
 #include "TPCReco/MLTrackBuilder.h"
 #include <iostream>
 #include "TPCReco/tf_functions.h"
+#include <boost/property_tree/json_parser.hpp>
 
-TensorflowModel::TensorflowModel(const char* model_path)
+TensorflowModel::TensorflowModel(const char* model_path, const boost::property_tree::ptree& aConfig);
     : graph(nullptr), session(nullptr)
 {
     // Load the TensorFlow model session.
