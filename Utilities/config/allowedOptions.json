@@ -358,5 +358,17 @@
         "type" : "string",
         "defaultValue" : "",
         "description" : "Path to exported tensorflow model.\nType: string"
+    },
+    "InputDim":{
+        "group": "input",
+        "type" : "vector<unsigned int>",
+        "defaultValue": [ ],
+        "description": "TF input dim\nType: vector<unsigned int>"
+    },
+    "OutputDim":{
+        "group": "input",
+        "type" : "vector<unsigned int>",
+        "defaultValue": [ ],
+        "description": "TF output dim. Empty vector has no effect (default).\nType: vector<unsigned int>"
     }
 }

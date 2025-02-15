@@ -8,6 +8,15 @@ TensorflowModel::TensorflowModel(const boost::property_tree::ptree& aConfig)
 {
     const std::string model_path = myConfig.get<std::string>("input.TfModelPath");
     const char* model_path_cstr = model_path.c_str();
+    // const std::vector<unsigned int> input_dim = myConfig.get<std::vector<unsigned int>>("input.InputDim");
+    // const std::vector<unsigned int> output_dim = myConfig.get<std::vector<unsigned int>>("input.OutputDim");
+
+    // for (auto el: input_dim){
+    //    std::cout<<el;
+    // }
+    // for (auto el: output_dim){
+    //     std::cout<<el;
+    // }
 
     // Load the TensorFlow model session.
     tf_functions::load_session(model_path_cstr, &graph, &session);
