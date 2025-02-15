@@ -1,0 +1,47 @@
+Bootstrap: docker
+From: ubuntu:24.04
+
+%files
+    root_packages packages
+
+%post
+    # Set build-time variables
+    export ROOT_BIN="root_v6.34.00-rc1.Linux-ubuntu24.10-x86_64-gcc14.2.tar.gz"
+    export GEANT4_VERSION="11.3.0"
+
+    # Update and install dependencies
+    apt-get update -qq
+    ln -sf /usr/share/zoneinfo/UTC /etc/localtime
+    apt-get -y install $(cat packages) wget
+    apt-get -y install unminimize
+    rm -rf /var/lib/apt/lists/*
+
+    # Download and install ROOT
+    wget https://root.cern/download/${ROOT_BIN}
+    tar -xzvf ${ROOT_BIN}
+    rm -f ${ROOT_BIN}
+    mv root /usr/local/root
+    echo /usr/local/root/lib >> /etc/ld.so.conf
+    ldconfig
+
+    # Unminimize the image
+    yes | unminimize
+
+    # Download and install Geant4
+    wget https://github.com/Geant4/geant4/archive/refs/tags/v${GEANT4_VERSION}.tar.gz -O geant.tar.gz
+    tar xf geant.tar.gz && rm geant.tar.gz
+    cmake -S geant4-${GEANT4_VERSION} -Bbuild \
+          -DGEANT4_INSTALL_DATA=ON \
+          -DCMAKE_INSTALL_PREFIX=/usr/local/
+    cmake --build build --target install -- -j 10
+    rm -r build geant4-${GEANT4_VERSION}
+    ldconfig
+
+    # Set up working directory
+    mkdir -p /app
+
+%environment
+    export ROOTSYS=/usr/local/root
+    export PATH=$ROOTSYS/bin:$PATH
+    export PYTHONPATH=$ROOTSYS/lib:$PYTHONPATH
+    export CLING_STANDARD_PCH=none
