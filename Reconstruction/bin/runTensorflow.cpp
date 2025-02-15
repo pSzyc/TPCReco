@@ -52,14 +52,14 @@ int main(int argc, char** argv) {
 
     int batch_size = 1;
     std::vector<float> input_tensor = createVectorOfOnes(batch_size);
-        TensorflowModel model(tree);
+    TensorflowModel model(tree);
 
-    // Tensor output_tensor = model.run(input_tensor, output_shape);
+    std::vector<float> output_tensor = model.run(input_tensor);
 
-    // std::cout << "Prediction:" << std::endl;
-    // for (size_t i = 0; i < output_tensor.data.size(); ++i) {
-    //     std::cout << output_tensor.data[i] << std::endl;
-    // }
+    std::cout << "Prediction:" << std::endl;
+    for (size_t i = 0; i < output_tensor.size(); ++i) {
+         std::cout << output_tensor[i] << std::endl;
+    }
 
     return 0;
 }

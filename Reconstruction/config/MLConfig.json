@@ -1,7 +1,7 @@
 {
     "input": {
         "TfModelPath": "./model-test",
-        "InputDim": [3, 512, 256],
-        "OutputDim": [9]
+        "InputDim": [1, 256, 512, 3],
+        "OutputDim": [1, 9]
     }
 }

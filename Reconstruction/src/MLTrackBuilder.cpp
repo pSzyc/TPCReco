@@ -4,19 +4,20 @@
 #include <boost/property_tree/json_parser.hpp>
 
 TensorflowModel::TensorflowModel(const boost::property_tree::ptree& aConfig)
-    : graph(nullptr), session(nullptr), myConfig(aConfig)
+    : graph(nullptr), session(nullptr), myConfig(aConfig), output_lenght(1)
 {
     const std::string model_path = myConfig.get<std::string>("input.TfModelPath");
     const char* model_path_cstr = model_path.c_str();
-    // const std::vector<unsigned int> input_dim = myConfig.get<std::vector<unsigned int>>("input.InputDim");
-    // const std::vector<unsigned int> output_dim = myConfig.get<std::vector<unsigned int>>("input.OutputDim");
 
-    // for (auto el: input_dim){
-    //    std::cout<<el;
-    // }
-    // for (auto el: output_dim){
-    //     std::cout<<el;
-    // }
+    // Parse the input dimensions
+    for (const auto& item : myConfig.get_child("input.InputDim")) {
+        inputDim.push_back(item.second.get_value<std::int64_t>());
+    }
+    // Parse the output dimensions
+    for (const auto& item : myConfig.get_child("input.OutputDim")) {
+        outputDim.push_back(item.second.get_value<std::int64_t>());
+        output_lenght *= item.second.get_value<std::int64_t>();
+    }
 
     // Load the TensorFlow model session.
     tf_functions::load_session(model_path_cstr, &graph, &session);
@@ -40,28 +41,26 @@ TensorflowModel::TensorflowModel(const boost::property_tree::ptree& aConfig)
     }
 }
 
-Tensor TensorflowModel::run(const Tensor input_data, std::vector<int64_t> output_shape)
+std::vector<float> TensorflowModel::run(std::vector<float> input_data)
 {    
 
     // Create the input tensor using the stored dimensions.
     TF_Tensor* input_tensor = nullptr;
-    tf_functions::create_tensor(TF_FLOAT, input_data.shape, input_data.shape.size(), input_data.data, &input_tensor);
+    tf_functions::create_tensor(TF_FLOAT, inputDim, inputDim.size(), input_data, &input_tensor);
 
 
     // Run the session.
     TF_Tensor* output_tensor = nullptr;
-    tf_functions::run_session(session,
-                              &input, &input_tensor, 1,
-                              &output, &output_tensor, 1);
-
+    tf_functions::run_session(
+        session,
+        &input, &input_tensor, 1,
+        &output, &output_tensor, 1
+    );
     // Retrieve the results from the output tensor.
     float* tensor_data = static_cast<float*>(TF_TensorData(output_tensor));
 
     std::vector<float> results;
-    int64_t output_lenght = 1;
-    for (auto el: output_shape){
-        output_lenght *= el;
-    }
+
     results.reserve(output_lenght);
 
     for (std::int64_t i = 0; i < output_lenght; i++) {
@@ -72,8 +71,7 @@ Tensor TensorflowModel::run(const Tensor input_data, std::vector<int64_t> output
     tf_functions::delete_tensor(input_tensor);
     tf_functions::delete_tensor(output_tensor);
 
-    Tensor tensor = {output_shape, results};
-    return tensor;
+    return results;
 }
 
 TensorflowModel::~TensorflowModel()
