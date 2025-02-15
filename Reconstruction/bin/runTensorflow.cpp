@@ -1,33 +1,38 @@
 #include <iostream>
+
+#include <boost/property_tree/json_parser.hpp>
+
 #include "TPCReco/MLTrackBuilder.h"
+#include "TPCReco/ConfigManager.h"
 
 // Function to create a tensor filled with ones for testing
-Tensor createTensorOfOnes(int batch_size) {
+std::vector<float> createVectorOfOnes(int batch_size) {
     const int height = 256;
     const int width = 512;
     const int channels = 3;
 
-    Tensor tensor;
-    tensor.shape = {batch_size, height, width, channels};
-    tensor.data.resize(batch_size * height * width * channels, 1.0f);
+    std::vector<float> input_example = {};
 
-    return tensor;
+    input_example.resize(batch_size * height * width * channels, 1.0f);
+
+    return input_example;
 }
 
-int main() {
-    int batch_size = 1; // Example batch size
-    Tensor input_tensor = createTensorOfOnes(batch_size);
-    std::vector<int64_t> output_shape = {batch_size, 9};
+int main(int argc, char** argv) {
+	ConfigManager cm;
+	boost::property_tree::ptree tree = cm.getConfig(argc,argv);
+    if(cm.isHelpMode()) return 0; // nothing more to do, exit
 
-    const char* model_path = "resources/model-test";
-    TensorflowModel model(model_path);
+    int batch_size = 1;
+    std::vector<float> input_tensor = createVectorOfOnes(batch_size);
+        TensorflowModel model(tree);
 
-    Tensor output_tensor = model.run(input_tensor, output_shape);
+    // Tensor output_tensor = model.run(input_tensor, output_shape);
 
-    std::cout << "Prediction:" << std::endl;
-    for (size_t i = 0; i < output_tensor.data.size(); ++i) {
-        std::cout << output_tensor.data[i] << std::endl;
-    }
+    // std::cout << "Prediction:" << std::endl;
+    // for (size_t i = 0; i < output_tensor.data.size(); ++i) {
+    //     std::cout << output_tensor.data[i] << std::endl;
+    // }
 
     return 0;
 }

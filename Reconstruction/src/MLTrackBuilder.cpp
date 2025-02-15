@@ -3,11 +3,14 @@
 #include "TPCReco/tf_functions.h"
 #include <boost/property_tree/json_parser.hpp>
 
-TensorflowModel::TensorflowModel(const char* model_path, const boost::property_tree::ptree& aConfig);
-    : graph(nullptr), session(nullptr)
+TensorflowModel::TensorflowModel(const boost::property_tree::ptree& aConfig)
+    : graph(nullptr), session(nullptr), myConfig(aConfig)
 {
+    const std::string model_path = myConfig.get<std::string>("input.TfModelPath");
+    const char* model_path_cstr = model_path.c_str();
+
     // Load the TensorFlow model session.
-    tf_functions::load_session(model_path, &graph, &session);
+    tf_functions::load_session(model_path_cstr, &graph, &session);
 
     // Initialize the input operation.
     TF_Operation* input_op = TF_GraphOperationByName(graph, "serve_keras_tensor");

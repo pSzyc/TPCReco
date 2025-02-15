@@ -4,6 +4,7 @@
 #include <vector>
 #include <cstdint>
 #include <tensorflow/c/c_api.h>
+#include <boost/property_tree/ptree.hpp>
 
 // Structure to hold the output tensor data together with its shape.
 struct Tensor {
@@ -14,7 +15,7 @@ struct Tensor {
 class TensorflowModel {
 public:
 
-    TensorflowModel(const char* model_path, const boost::property_tree::ptree& aConfig);
+    TensorflowModel(const boost::property_tree::ptree& aConfig);
 
     Tensor run(const Tensor input_data, std::vector<int64_t> output_shape);
 

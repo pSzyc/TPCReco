@@ -17,5 +17,7 @@ target_link_libraries(
 install(DIRECTORY examples DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 reco_add_executable(runTensorflow bin/runTensorflow.cpp)
-target_link_libraries(runTensorflow PRIVATE ${MODULE_NAME})
+target_link_libraries(runTensorflow PRIVATE Boost::program_options ${MODULE_NAME})
 reco_install_targets(${MODULE_NAME} runTensorflow)
+
+install(DIRECTORY config DESTINATION ${CMAKE_INSTALL_PREFIX})

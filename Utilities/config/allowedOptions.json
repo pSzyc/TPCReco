@@ -352,5 +352,11 @@
         "type" : "float",
         "defaultValue" : 0.0,
         "description" : "Additive carbon track length correction. [mm]\nType: float"
+    },
+    "TfModelPath":{
+        "group":"input",
+        "type" : "string",
+        "defaultValue" : "",
+        "description" : "Path to exported tensorflow model.\nType: string"
     }
 }
