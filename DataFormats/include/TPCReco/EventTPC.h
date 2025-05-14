@@ -43,6 +43,7 @@ class EventTPC {
   double GetValByStripMerged(int strip_dir, int strip_number, int time_cell);  
 
   const eventraw::EventInfo & GetEventInfo() const { return myEventInfo; };
+  std::shared_ptr<TH3D> GetRawHisto() const { return a3DHistoRawPtr; }
   inline GeometryTPC * GetGeoPtr() const { return myGeometryPtr.get(); }
 
   std::shared_ptr<TH1D> get1DProjection(definitions::projection_type projType,
