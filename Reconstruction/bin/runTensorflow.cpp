@@ -1,6 +1,7 @@
 #include <iostream>
 #include <numeric>  // for accumulate
 #include <boost/property_tree/json_parser.hpp>
+#include <tuple>
 
 #include "TPCReco/MLTrackBuilder.h"
 #include "TPCReco/ConfigManager.h"
@@ -53,44 +54,46 @@ int main(int argc, char** argv) {
         eventTPC.SetChargeMap(pEventTPC.GetChargeMap());
         eventTPC.SetEventInfo(pEventTPC.GetEventInfo());
 
-        // Flatten histogram into input tensor
-        auto histPtr = eventTPC.GetRawHisto();
-        std::vector<float> input_tensor;
-        constexpr size_t MODEL_INPUT_SIZE = 256 * 512 * 3;
+        auto u = eventTPC.get2DProjection(definitions::projection_type::DIR_TIME_U, filter_type::none, scale_type::mm);
+        auto v = eventTPC.get2DProjection(definitions::projection_type::DIR_TIME_V, filter_type::none, scale_type::mm);
+        auto w = eventTPC.get2DProjection(definitions::projection_type::DIR_TIME_W, filter_type::none, scale_type::mm);
 
-        if (!histPtr) {
-            std::cerr << "Warning: No histogram found. Using zero input." << std::endl;
-            input_tensor.resize(MODEL_INPUT_SIZE, 0.0f);
-        } else {
-            int nBinsX = histPtr->GetNbinsX();
-            int nBinsY = histPtr->GetNbinsY();
-            int nBinsZ = histPtr->GetNbinsZ();
+        assert(u->GetNbinsZ() == 1);
+        assert(v->GetNbinsZ() == 1);
+        assert(w->GetNbinsZ() == 1);
 
-            for (int x = 1; x <= nBinsX; ++x)
-                for (int y = 1; y <= nBinsY; ++y)
-                    for (int z = 1; z <= nBinsZ; ++z)
-                        input_tensor.push_back(histPtr->GetBinContent(x, y, z));
+        auto bufs =
+            std::array<std::tuple<const TH2D*, std::size_t, std::size_t>, 3>{
+                {std::make_tuple(u.get(), u->GetNbinsX(), u->GetNbinsY()),
+                 std::make_tuple(v.get(), v->GetNbinsX(), v->GetNbinsY()),
+                 std::make_tuple(w.get(), w->GetNbinsX(), w->GetNbinsY())}};
 
-            if (input_tensor.size() < MODEL_INPUT_SIZE)
-                input_tensor.resize(MODEL_INPUT_SIZE, 0.0f);
-            else if (input_tensor.size() > MODEL_INPUT_SIZE)
-                input_tensor.resize(MODEL_INPUT_SIZE);
+
+        constexpr std::size_t LAYER_X_SIZE = 512;
+        constexpr std::size_t LAYER_Y_SIZE = 256;
+        auto model_input_tensor = std::vector<float>(LAYER_X_SIZE * LAYER_Y_SIZE * 3);
+
+        auto idx = 0u;
+        for (auto const& buf_tup : bufs) {
+          auto data = std::get<0>(buf_tup);
+          auto len_x = std::get<1>(buf_tup);
+          auto len_y = std::get<2>(buf_tup);
+
+          assert(len_x <= LAYER_X_SIZE);
+          assert(len_y <= LAYER_Y_SIZE);
+
+          //memory layout: [x=0,y=0, x=0, y=1, ..., x=0, y=n, x=1, y=n, ...]
+          for(auto x = 0u; x < len_x; ++x){
+            auto col_it = model_input_tensor.begin() + (x * LAYER_Y_SIZE) + (idx * LAYER_X_SIZE * LAYER_Y_SIZE);
+            for(auto y = 0u; y < len_y; ++y){
+              *col_it = data->GetBin(x, y);
+              ++col_it;
+            }
+          }
+          ++idx;
         }
 
-        //the input tensor turns out to be all zeros
-        std::cout << "\n[DEBUG] Input tensor (first 100 values):\n";
-        for (size_t i = 0; i < std::min(input_tensor.size(), size_t(100)); ++i) {
-            std::cout << input_tensor[i] << " ";
-            if ((i + 1) % 10 == 0) std::cout << std::endl;
-        }
-        std::cout << std::endl;
-
-        float sum = std::accumulate(input_tensor.begin(), input_tensor.end(), 0.0f);
-        float max = *std::max_element(input_tensor.begin(), input_tensor.end());
-        std::cout << "[DEBUG] Input tensor sum: " << sum << ", max value: " << max << "\n" << std::endl;
-
-        // Run inference
-        std::vector<float> output_tensor = model.run(input_tensor);
+        auto output_tensor = model.run(model_input_tensor);
 
         // Display results
         std::cout << "Prediction:" << std::endl;
